@@ -32,13 +32,13 @@ class User(Base):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # Log user creation
+      
         logger.info(f"New user created: id={self.id}, status={self.status}")
 
     def update_status(self, new_status):
-        # Update user status
+       
         self.status = new_status
         self.status_updated_at = datetime.utcnow()
-        # Log status update
+      
         logger.info(
             f"User status updated: id={self.id}, new_status={self.status}")
