@@ -1,13 +1,16 @@
 # dataframe.py
 import asyncio
 import logging
+
 import pandas as pd
 from telethon import TelegramClient
 from transformers import pipeline
+
 from config import API_HASH, API_ID
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 async def main():
     api_id = API_ID
@@ -20,7 +23,8 @@ async def main():
         async for item in client.iter_participants(chat):
             data_item.append([item.first_name, item.last_name, item.id])
 
-        df_participants = pd.DataFrame(data_item, columns=['first_name', 'last_name', 'id'])
+        df_participants = pd.DataFrame(
+            data_item, columns=['first_name', 'last_name', 'id'])
 
         data_message = []
         async for message in client.iter_messages(chat, limit=100):
@@ -30,7 +34,8 @@ async def main():
 
         df_messages.to_csv('messages.csv', index=False, encoding='utf-8')
 
-        model = pipeline("sentiment-analysis", "blanchefort/rubert-base-cased-sentiment")
+        model = pipeline("sentiment-analysis",
+                         "blanchefort/rubert-base-cased-sentiment")
         sentiments = [model(text)[0]["label"] for text in df_messages["text"]]
         df_messages["Sentiment"] = pd.Series(sentiments)
 
