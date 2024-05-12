@@ -1,5 +1,3 @@
-# database.py
-# import asyncio
 import logging
 
 import aiosqlite
