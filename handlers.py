@@ -1,4 +1,3 @@
-# handlers.py
 import asyncio
 import logging
 
@@ -21,7 +20,7 @@ logger.addHandler(file_handler)
 
 async def main():
     async with Client("ChatMastersbot", api_id=API_ID, api_hash=API_HASH) as bot:
-        # Command: /start
+
         @bot.on_message(filters.command("start"))
         async def start_command(client, message):
             logger.info("Received /start command")
@@ -32,13 +31,11 @@ async def main():
                 )
             )
 
-        # Callback Query: start button
         @bot.on_callback_query(filters.regex("start"))
         async def start_button(client, callback_query):
             logger.info("Received start button callback")
             await callback_query.message.reply_text("Вы нажали кнопку \"Старт\"!")
 
-        # Command: /add_user
         @bot.on_message(filters.private & filters.command("add_user"))
         async def add_user_command(client, message):
             logger.info("Received /add_user command")

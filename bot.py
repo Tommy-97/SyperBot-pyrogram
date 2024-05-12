@@ -1,4 +1,3 @@
-# bot.py
 import asyncio
 import logging
 from datetime import datetime, timedelta
@@ -45,4 +44,4 @@ async def check_users_ready(bot):
         except Exception as e:
             logger.error(f"Error occurred: {e}")
 
-        await asyncio.sleep(60)  # Check users every 60 seconds
+        await asyncio.sleep(60)
