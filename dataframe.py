@@ -1,3 +1,4 @@
+# dataframe.py
 import asyncio
 import logging
 
@@ -16,7 +17,7 @@ async def main():
     api_hash = API_HASH
 
     async with TelegramClient('session_name', api_id, api_hash) as client:
-        chat = 'https://t.me/SuperChatMaster3000_bot'
+        chat = 'SuperChatMaster3000_bot'
 
         data_item = []
         async for item in client.iter_participants(chat):
