@@ -3,8 +3,8 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 
-from pyrogram import Client
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from database import async_session
 from models import User
@@ -18,33 +18,38 @@ async def send_message(bot, user_id, text):
         await bot.send_message(user_id, text)
         logger.info(f"Message sent to user {user_id}: {text}")
     except Exception as e:
-        logger.error(f"Error sending message to user {user_id}: {e}")
+        logger.error(f"Failed to send message to user {user_id}: {e}")
 
 
 async def check_users_ready(bot):
-    while True:
-        try:
-            async with async_session() as session:
-                async with session.begin():
-                    ready_users = await session.execute(select(User).filter(User.status == 'alive'))
-                    for user in ready_users.scalars().all():
-                        try:
-                            delta = datetime.utcnow() - (user.status_updated_at or user.created_at)
-                            if delta >= timedelta(minutes=39):
-                                text = "прекрасно"
-                                await send_message(bot, user.id, text)
-                                user.status = 'finished'
-                            elif delta >= timedelta(minutes=6):
-                                text = "ожидать"
-                                await send_message(bot, user.id, text)
-                                user.status = 'dead'
+    logging.info("Checking users...")
+    try:
+        async with async_session() as session:
+            async with session.begin():
+                ready_users = await session.execute(select(User).filter(User.status == 'alive'))
+                for user in ready_users.scalars().all():
+                    try:
+                        logger.info(
+                            f"User {user.id} with status 'alive' found.")
+                        delta = datetime.utcnow() - (user.status_updated_at or user.created_at)
+                        if delta >= timedelta(minutes=39):
+                            text = "прекрасно"
+                            await send_message(bot, user.id, text)
+                            user.status = 'finished'
                             logger.info(
-                                f"User {user.id} with status '{user.status}' found.")
-                        except Exception as e:
-                            logger.error(
-                                f"Error processing user {user.id}: {e}")
-            await session.commit()
-        except Exception as e:
-            logger.error(f"Error occurred: {e}")
+                                f"User {user.id} status updated to 'finished'.")
+                        elif delta >= timedelta(minutes=6):
+                            text = "ожидать"
+                            await send_message(bot, user.id, text)
+                            user.status = 'dead'
+                            logger.info(
+                                f"User {user.id} status updated to 'dead'.")
+                    except Exception as e:
+                        logger.error(f"Error processing user {user.id}: {e}")
+                await session.commit()
+    except SQLAlchemyError as e:
+        logger.error(f"SQLAlchemy error occurred while checking users: {e}")
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while checking users: {e}")
 
-        await asyncio.sleep(60)
+    await asyncio.sleep(60)
